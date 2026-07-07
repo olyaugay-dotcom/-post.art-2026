@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 
-  <link rel="icon" href="IMG_8589.jpeg">
+<link rel="icon" href="IMG_8589.jpeg">
 <link rel="apple-touch-icon" href="IMG_8589.jpeg">
 
 <meta charset="UTF-8">
@@ -240,6 +240,60 @@ select{
   margin-top:10px;
 }
 
+.modal-overlay{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.5);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+}
+
+.modal-overlay.hidden{
+  display:none;
+}
+
+.modal-box{
+  background:white;
+  border-radius:20px;
+  padding:25px;
+  width:85%;
+  max-width:340px;
+}
+
+.modal-box p{
+  font-size:17px;
+  margin-bottom:15px;
+}
+
+.modal-box input{
+  margin-bottom:15px;
+}
+
+.modal-actions{
+  display:flex;
+  gap:10px;
+}
+
+.modal-actions button{
+  flex:1;
+  height:50px;
+}
+
+.modal-cancel-btn{
+  background:#e5e7eb;
+  color:#111827;
+}
+
+.modal-ok-btn{
+  background:#111827;
+  color:white;
+}
+
 </style>
 
 </head>
@@ -308,12 +362,24 @@ onclick="restoreBackup()"
 
 <input id="barcode" type="text" placeholder="Штрих-код (можно пусто)">
 
-<button type="button" class="save-btn" onclick="startScan()" style="background:#7c3aed;margin-bottom:15px;">
+<button
+type="button"
+class="save-btn"
+onclick="startScan()"
+style="background:#7c3aed;margin-bottom:10px;">
 📷 Сканировать штрих-код
 </button>
 
-<div id="scanBox" style="margin-bottom:15px;"></div>
+<button
+type="button"
+class="delete-btn"
+id="stopScanBtn"
+onclick="stopScan()"
+style="display:none;margin-bottom:15px;">
+⛔ Стоп скан
+</button>
 
+<div id="scanBox" style="margin-bottom:15px;"></div>
 
 <select id="category" onchange="toggleCustomCategory()">
 
@@ -432,6 +498,14 @@ onclick="addExpense()"
 Расходы
 </h2>
 
+<button
+class="delete-btn"
+onclick="clearAllExpenses()"
+style="width:100%;margin-bottom:10px;"
+>
+Удалить все расходы
+</button>
+
 <div id="expenses"></div>
 
 </div>
@@ -467,6 +541,14 @@ onclick="addExpense()"
 <h2 class="section-title">
 История продаж
 </h2>
+
+<button
+class="delete-btn"
+onclick="clearHistory()"
+style="width:100%;margin-bottom:10px;"
+>
+Очистить историю продаж
+</button>
 
 <div id="history"></div>
 
@@ -520,7 +602,97 @@ onclick="showScreen('statsScreen',this)"
 
 </div>
 
+<div id="modalOverlay" class="modal-overlay hidden">
+
+<div class="modal-box">
+
+<p id="modalMessage"></p>
+
+<input id="modalInput" class="hidden" type="number">
+
+<div class="modal-actions">
+
+<button class="modal-cancel-btn" onclick="modalCancel()">Отмена</button>
+
+<button class="modal-ok-btn" onclick="modalConfirm()">ОК</button>
+
+</div>
+
+</div>
+
+</div>
+
 <script>
+
+let currentModalCallback = null;
+let modalIsPrompt = false;
+
+function showConfirm(message, callback){
+
+currentModalCallback = callback;
+modalIsPrompt = false;
+
+document.getElementById('modalMessage').innerText = message;
+document.getElementById('modalInput').classList.add('hidden');
+document.getElementById('modalOverlay').classList.remove('hidden');
+
+}
+
+function showPrompt(message, defaultValue, callback){
+
+currentModalCallback = callback;
+modalIsPrompt = true;
+
+document.getElementById('modalMessage').innerText = message;
+
+const input = document.getElementById('modalInput');
+
+input.classList.remove('hidden');
+input.value = defaultValue;
+
+document.getElementById('modalOverlay').classList.remove('hidden');
+
+setTimeout(()=>{ input.focus(); },50);
+
+}
+
+function modalConfirm(){
+
+document.getElementById('modalOverlay').classList.add('hidden');
+
+if(modalIsPrompt){
+
+const val = document.getElementById('modalInput').value;
+
+if(currentModalCallback) currentModalCallback(val);
+
+}else{
+
+if(currentModalCallback) currentModalCallback(true);
+
+}
+
+currentModalCallback = null;
+
+}
+
+function modalCancel(){
+
+document.getElementById('modalOverlay').classList.add('hidden');
+
+if(modalIsPrompt){
+
+if(currentModalCallback) currentModalCallback(null);
+
+}else{
+
+if(currentModalCallback) currentModalCallback(false);
+
+}
+
+currentModalCallback = null;
+
+}
 
 let editIndex = null;
 
@@ -787,7 +959,7 @@ return;
 
 }
 
-expenses.forEach((item)=>{
+expenses.forEach((item,index)=>{
 
 div.innerHTML += `
 
@@ -803,9 +975,78 @@ div.innerHTML += `
 ${item.time}
 </p>
 
+<button
+class="delete-btn"
+onclick="deleteExpense(${index})"
+>
+Удалить
+</button>
+
 </div>
 
 `;
+
+});
+
+}
+
+function deleteExpense(index){
+
+showConfirm("Удалить этот расход?", function(ok){
+
+if(!ok) return;
+
+expenses = expenses.filter((_, i) => i !== index);
+
+saveData();
+
+updateTop();
+
+renderExpenses();
+
+renderStats();
+
+});
+
+}
+
+function clearAllExpenses(){
+
+if(expenses.length === 0) return;
+
+showConfirm("Удалить ВСЕ расходы? Это действие нельзя отменить.", function(ok){
+
+if(!ok) return;
+
+expenses = [];
+
+saveData();
+
+updateTop();
+
+renderExpenses();
+
+renderStats();
+
+});
+
+}
+
+function clearHistory(){
+
+if(salesHistory.length === 0) return;
+
+showConfirm("Очистить всю историю продаж? Это действие нельзя отменить.", function(ok){
+
+if(!ok) return;
+
+salesHistory = [];
+
+saveData();
+
+renderHistory();
+
+renderStats();
 
 });
 
@@ -997,27 +1238,51 @@ behavior:"smooth"
 
 function sellProduct(index){
 
-if(products[index].qty <= 0){
+const item = products[index];
+
+if(item.qty <= 0){
 return;
 }
 
-products[index].qty--;
+showPrompt(
+"Сколько штук продано? (в наличии: " + item.qty + ")",
+"1",
+function(soldQtyRaw){
 
-cash += Number(products[index].sellPrice);
+if(soldQtyRaw === null) return;
 
-const oneProfit =
-Number(products[index].sellPrice) -
-Number(products[index].buyPrice);
+const soldQty = Number(soldQtyRaw);
 
-totalProfit += oneProfit;
+if(!soldQty || soldQty <= 0){
+alert("Введите правильное количество");
+return;
+}
+
+if(soldQty > item.qty){
+alert("Недостаточно товара на складе");
+return;
+}
+
+item.qty -= soldQty;
+
+const saleTotal =
+Number(item.sellPrice) * soldQty;
+
+cash += saleTotal;
+
+const saleProfit =
+(Number(item.sellPrice) - Number(item.buyPrice)) * soldQty;
+
+totalProfit += saleProfit;
 
 salesHistory.unshift({
-name:products[index].name,
-price:products[index].sellPrice,
+name:item.name,
+price:saleTotal,
+qty:soldQty,
 time:new Date().toLocaleString("ru-RU")
 });
 
-if(products[index].qty === 0){
+if(item.qty === 0){
 products.splice(index,1);
 }
 
@@ -1035,9 +1300,17 @@ renderStats();
 
 }
 
+);
+
+}
+
 function deleteProduct(index){
 
-products.splice(index,1);
+showConfirm("Удалить товар?", function(ok){
+
+if(!ok) return;
+
+products = products.filter((_, i) => i !== index);
 
 saveData();
 
@@ -1046,6 +1319,8 @@ renderCategories();
 renderProducts();
 
 renderStats();
+
+});
 
 }
 
@@ -1123,7 +1398,14 @@ return;
 
 }
 
-filtered.forEach((item,index)=>{
+filtered.forEach((item)=>{
+
+const index = products.findIndex(p =>
+p.name === item.name &&
+p.buyPrice === item.buyPrice &&
+p.sellPrice === item.sellPrice &&
+p.qty === item.qty
+);
 
 div.innerHTML += `
 
@@ -1226,7 +1508,11 @@ div.innerHTML += `
 <h3>${sale.name}</h3>
 
 <p>
-Продано на:
+Продано: ${sale.qty ? sale.qty + " шт." : "1 шт."}
+</p>
+
+<p>
+На сумму:
 ${formatMoney(sale.price)}
 </p>
 
@@ -1246,6 +1532,7 @@ ${sale.time}
 let html5QrCode = null;
 
 function startScan(){
+document.getElementById("stopScanBtn").style.display = "block";
   const scanBox = document.getElementById("scanBox");
   scanBox.innerHTML = "<div id='reader'></div>";
   html5QrCode = new Html5Qrcode("reader");
@@ -1263,12 +1550,23 @@ function startScan(){
 }
 
 function stopScan(){
-  if(html5QrCode){
-    html5QrCode.stop().then(()=>{
-      document.getElementById("scanBox").innerHTML = "";
-      html5QrCode = null;
-    });
-  }
+
+if(!html5QrCode) return;
+
+html5QrCode.stop()
+.then(()=>{
+
+document.getElementById("scanBox").innerHTML="";
+
+document.getElementById("stopScanBtn").style.display = "none";
+
+html5QrCode.clear();
+
+html5QrCode=null;
+
+})
+.catch(()=>{});
+
 }
 
 </script>
