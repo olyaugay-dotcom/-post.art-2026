@@ -1,0 +1,1234 @@
+
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Учет легко</title>
+
+<style>
+
+body{
+  margin:0;
+  padding:20px 20px 120px;
+  background:#f4f4f4;
+  font-family:Arial;
+}
+
+h1{
+  margin-top:20px;
+  font-size:34px;
+}
+
+.subtitle{
+  color:gray;
+  margin-bottom:25px;
+}
+
+.screen{
+  display:none;
+}
+
+.active{
+  display:block;
+}
+
+.card{
+  background:#111827;
+  color:white;
+  padding:25px;
+  border-radius:24px;
+  margin-bottom:20px;
+}
+
+.card h2{
+  font-size:32px;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:15px;
+  margin-bottom:30px;
+}
+
+.stat-box{
+  background:white;
+  padding:20px;
+  border-radius:20px;
+}
+
+.stat-box h3{
+  margin:0;
+  font-size:15px;
+  color:gray;
+}
+
+.stat-box p{
+  margin-top:10px;
+  font-size:22px;
+  font-weight:bold;
+}
+
+button{
+  height:55px;
+  border:none;
+  border-radius:18px;
+  font-size:18px;
+}
+
+.add-product,
+.expense-box,
+.backup-box{
+  background:white;
+  padding:20px;
+  border-radius:20px;
+  margin-bottom:25px;
+}
+
+input,
+select{
+  width:100%;
+  height:55px;
+  margin-bottom:15px;
+  border:none;
+  border-radius:15px;
+  padding-left:15px;
+  background:#e5e7eb;
+  font-size:16px;
+  box-sizing:border-box;
+}
+
+.product,
+.history-item,
+.expense-item{
+  background:white;
+  padding:20px;
+  border-radius:20px;
+  margin-top:18px;
+}
+
+.save-btn{
+  background:#111827;
+  color:white;
+}
+
+.sell-btn{
+  background:#16a34a;
+  color:white;
+  margin-top:10px;
+}
+
+.delete-btn{
+  background:#dc2626;
+  color:white;
+  margin-top:10px;
+}
+
+.edit-btn{
+  background:#2563eb;
+  color:white;
+  margin-top:10px;
+}
+
+.expense-btn{
+  background:#ea580c;
+  color:white;
+}
+
+.download-btn{
+  background:#111827;
+  color:white;
+  margin-bottom:15px;
+}
+
+.upload-btn{
+  background:#2563eb;
+  color:white;
+}
+
+.profit{
+  margin-top:10px;
+  color:#16a34a;
+  font-weight:bold;
+}
+
+.time{
+  color:gray;
+  margin-top:10px;
+  font-size:14px;
+}
+
+.section-title{
+  margin-top:35px;
+}
+
+.empty{
+  color:gray;
+  margin-top:20px;
+  text-align:center;
+}
+
+.search{
+  margin-bottom:20px;
+}
+
+.category{
+  display:inline-block;
+  background:#e5e7eb;
+  padding:8px 14px;
+  border-radius:999px;
+  margin-bottom:15px;
+  font-size:14px;
+}
+
+.hidden{
+  display:none;
+}
+
+.low-stock{
+  color:#dc2626;
+  font-weight:bold;
+  margin-top:10px;
+}
+
+.expense-price{
+  color:#dc2626;
+  font-weight:bold;
+}
+
+.bottom-nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  width:100%;
+  background:white;
+  display:flex;
+  justify-content:space-around;
+  padding:15px 0 30px;
+  border-top:1px solid #ddd;
+}
+
+.nav-btn{
+  background:none;
+  border:none;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  font-size:14px;
+  color:gray;
+  height:auto;
+}
+
+.nav-btn.active-nav{
+  color:#111827;
+  font-weight:bold;
+}
+
+.nav-icon{
+  font-size:24px;
+  margin-bottom:5px;
+}
+
+.file-input{
+  margin-top:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="homeScreen" class="screen active">
+
+<h1>Учет легко</h1>
+
+<p class="subtitle">
+Магазин под контролем
+</p>
+
+<div class="card">
+<h2 id="cash">0 сум</h2>
+<p>Выручка</p>
+</div>
+
+<div class="card">
+<h2 id="profit">0 сум</h2>
+<p>Чистая прибыль</p>
+</div>
+
+<div class="backup-box">
+
+<h2>
+Резервная копия
+</h2>
+
+<button
+class="download-btn"
+onclick="downloadBackup()"
+>
+Скачать данные
+</button>
+
+<input
+class="file-input"
+type="file"
+id="backupFile"
+>
+
+<button
+class="upload-btn"
+onclick="restoreBackup()"
+>
+Восстановить данные
+</button>
+
+</div>
+
+</div>
+
+<div id="productsScreen" class="screen">
+
+<h1>Товары</h1>
+
+<div class="add-product">
+
+<h2 id="formTitle">
+Добавить товар
+</h2>
+
+<input id="name" type="text" placeholder="Название товара">
+
+<select id="category" onchange="toggleCustomCategory()">
+
+<option value="">
+Выберите категорию
+</option>
+
+<option>Гель-лаки</option>
+<option>Базы</option>
+<option>Топы</option>
+<option>Пилки</option>
+<option>Лампы</option>
+<option>Жидкости</option>
+
+<option value="custom">
+Другое...
+</option>
+
+</select>
+
+<input
+id="customCategory"
+class="hidden"
+type="text"
+placeholder="Введите свою категорию"
+>
+
+<input id="buyPrice" type="number" placeholder="Закупочная цена">
+
+<input id="sellPrice" type="number" placeholder="Цена продажи">
+
+<input id="qty" type="number" placeholder="Количество">
+
+<button
+class="save-btn"
+id="saveButton"
+onclick="addProduct()"
+>
+
+Сохранить товар
+
+</button>
+
+</div>
+
+<input
+class="search"
+id="search"
+type="text"
+placeholder="Поиск товара..."
+oninput="renderProducts()"
+>
+
+<select
+id="filterCategory"
+onchange="renderProducts()"
+>
+<option value="">
+Все категории
+</option>
+</select>
+
+<div id="products"></div>
+
+</div>
+
+<div id="financeScreen" class="screen">
+
+<h1>Финансы</h1>
+
+<div class="card">
+<h2 id="cashFinance">0 сум</h2>
+<p>Общая выручка</p>
+</div>
+
+<div class="card">
+<h2 id="profitFinance">0 сум</h2>
+<p>Чистая прибыль</p>
+</div>
+
+<div class="card">
+<h2 id="expensesFinance">0 сум</h2>
+<p>Общие расходы</p>
+</div>
+
+<div class="expense-box">
+
+<h2>
+Добавить расход
+</h2>
+
+<input
+id="expenseName"
+type="text"
+placeholder="Название расхода"
+>
+
+<input
+id="expenseAmount"
+type="number"
+placeholder="Сумма расхода"
+>
+
+<button
+class="expense-btn"
+onclick="addExpense()"
+>
+
+Сохранить расход
+
+</button>
+
+</div>
+
+<h2 class="section-title">
+Расходы
+</h2>
+
+<div id="expenses"></div>
+
+</div>
+
+<div id="statsScreen" class="screen">
+
+<h1>Статистика</h1>
+
+<div class="stats">
+
+<div class="stat-box">
+<h3>Продаж</h3>
+<p id="salesCount">0</p>
+</div>
+
+<div class="stat-box">
+<h3>Товаров</h3>
+<p id="productsCount">0</p>
+</div>
+
+<div class="stat-box">
+<h3>Расходов</h3>
+<p id="expensesCount">0 сум</p>
+</div>
+
+<div class="stat-box">
+<h3>Лучший товар</h3>
+<p id="bestProduct">—</p>
+</div>
+
+</div>
+
+<h2 class="section-title">
+История продаж
+</h2>
+
+<div id="history"></div>
+
+</div>
+
+<div class="bottom-nav">
+
+<button
+class="nav-btn active-nav"
+onclick="showScreen('homeScreen',this)"
+>
+
+<div class="nav-icon">🏠</div>
+
+Главная
+
+</button>
+
+<button
+class="nav-btn"
+onclick="showScreen('productsScreen',this)"
+>
+
+<div class="nav-icon">📦</div>
+
+Товары
+
+</button>
+
+<button
+class="nav-btn"
+onclick="showScreen('financeScreen',this)"
+>
+
+<div class="nav-icon">💰</div>
+
+Финансы
+
+</button>
+
+<button
+class="nav-btn"
+onclick="showScreen('statsScreen',this)"
+>
+
+<div class="nav-icon">📊</div>
+
+Статистика
+
+</button>
+
+</div>
+
+<script>
+
+let editIndex = null;
+
+let products = JSON.parse(
+localStorage.getItem("products")
+) || [];
+
+let salesHistory = JSON.parse(
+localStorage.getItem("salesHistory")
+) || [];
+
+let expenses = JSON.parse(
+localStorage.getItem("expenses")
+) || [];
+
+let cash = Number(
+localStorage.getItem("cash")
+) || 0;
+
+let totalProfit = Number(
+localStorage.getItem("profit")
+) || 0;
+
+updateTop();
+
+renderStats();
+
+renderCategories();
+
+renderProducts();
+
+renderHistory();
+
+renderExpenses();
+
+function downloadBackup(){
+
+const backupData = {
+products,
+salesHistory,
+expenses,
+cash,
+totalProfit
+};
+
+const data =
+JSON.stringify(backupData);
+
+const blob =
+new Blob([data],{
+type:"application/json"
+});
+
+const url =
+URL.createObjectURL(blob);
+
+location.href = url;
+
+}
+
+function restoreBackup(){
+
+const file =
+document.getElementById("backupFile")
+.files[0];
+
+if(!file){
+alert("Выберите файл");
+return;
+}
+
+const reader =
+new FileReader();
+
+reader.onload = function(event){
+
+const data =
+JSON.parse(event.target.result);
+
+products = data.products || [];
+
+salesHistory =
+data.salesHistory || [];
+
+expenses =
+data.expenses || [];
+
+cash =
+data.cash || 0;
+
+totalProfit =
+data.totalProfit || 0;
+
+saveData();
+
+updateTop();
+
+renderStats();
+
+renderCategories();
+
+renderProducts();
+
+renderHistory();
+
+renderExpenses();
+
+alert("Данные восстановлены");
+
+};
+
+reader.readAsText(file);
+
+}
+
+function showScreen(screenId,button){
+
+document.querySelectorAll(".screen")
+.forEach((screen)=>{
+screen.classList.remove("active");
+});
+
+document.getElementById(screenId)
+.classList.add("active");
+
+document.querySelectorAll(".nav-btn")
+.forEach((btn)=>{
+btn.classList.remove("active-nav");
+});
+
+button.classList.add("active-nav");
+
+window.scrollTo({
+top:0,
+behavior:"smooth"
+});
+
+}
+
+function formatMoney(value){
+
+return value.toLocaleString("ru-RU") + " сум";
+
+}
+
+function renderStats(){
+
+document.getElementById("salesCount").innerText =
+salesHistory.length;
+
+const totalProducts =
+products.reduce((sum,item)=>
+sum + item.qty,0);
+
+document.getElementById("productsCount").innerText =
+totalProducts;
+
+const totalExpenses =
+expenses.reduce((sum,item)=>
+sum + item.amount,0);
+
+document.getElementById("expensesCount").innerText =
+formatMoney(totalExpenses);
+
+let bestName = "—";
+let bestProfit = 0;
+
+products.forEach((item)=>{
+
+const profit =
+(item.sellPrice - item.buyPrice) * item.qty;
+
+if(profit > bestProfit){
+
+bestProfit = profit;
+bestName = item.name;
+
+}
+
+});
+
+document.getElementById("bestProduct").innerText =
+bestName;
+
+}
+
+function updateTop(){
+
+const totalExpenses =
+expenses.reduce((sum,item)=>
+sum + item.amount,0);
+
+const realProfit =
+totalProfit - totalExpenses;
+
+document.getElementById("cash").innerText =
+formatMoney(cash);
+
+document.getElementById("profit").innerText =
+formatMoney(realProfit);
+
+document.getElementById("cashFinance").innerText =
+formatMoney(cash);
+
+document.getElementById("profitFinance").innerText =
+formatMoney(realProfit);
+
+document.getElementById("expensesFinance").innerText =
+formatMoney(totalExpenses);
+
+}
+
+function addExpense(){
+
+const name =
+document.getElementById("expenseName").value;
+
+const amount =
+Number(document.getElementById("expenseAmount").value);
+
+if(name === "" || amount <= 0){
+alert("Введите расход");
+return;
+}
+
+expenses.unshift({
+name:name,
+amount:amount,
+time:new Date().toLocaleString("ru-RU")
+});
+
+saveData();
+
+updateTop();
+
+renderExpenses();
+
+renderStats();
+
+document.getElementById("expenseName").value = "";
+
+document.getElementById("expenseAmount").value = "";
+
+}
+
+function renderExpenses(){
+
+const div =
+document.getElementById("expenses");
+
+div.innerHTML = "";
+
+if(expenses.length === 0){
+
+div.innerHTML = `
+
+<p class="empty">
+Расходов пока нет
+</p>
+
+`;
+
+return;
+
+}
+
+expenses.forEach((item)=>{
+
+div.innerHTML += `
+
+<div class="expense-item">
+
+<h3>${item.name}</h3>
+
+<p class="expense-price">
+-${formatMoney(item.amount)}
+</p>
+
+<p class="time">
+${item.time}
+</p>
+
+</div>
+
+`;
+
+});
+
+}
+
+function toggleCustomCategory(){
+
+const category =
+document.getElementById("category").value;
+
+const customInput =
+document.getElementById("customCategory");
+
+if(category === "custom"){
+customInput.classList.remove("hidden");
+}else{
+customInput.classList.add("hidden");
+}
+
+}
+
+function renderCategories(){
+
+const select =
+document.getElementById("filterCategory");
+
+select.innerHTML = `
+<option value="">
+Все категории
+</option>
+`;
+
+const categories = [];
+
+products.forEach((item)=>{
+
+if(!categories.includes(item.category)){
+categories.push(item.category);
+}
+
+});
+
+categories.forEach((category)=>{
+
+select.innerHTML += `
+
+<option>
+${category}
+</option>
+
+`;
+
+});
+
+}
+
+function clearForm(){
+
+document.getElementById("name").value = "";
+
+document.getElementById("category").value = "";
+
+document.getElementById("customCategory").value = "";
+
+document.getElementById("customCategory")
+.classList.add("hidden");
+
+document.getElementById("buyPrice").value = "";
+
+document.getElementById("sellPrice").value = "";
+
+document.getElementById("qty").value = "";
+
+document.getElementById("formTitle").innerText =
+"Добавить товар";
+
+document.getElementById("saveButton").innerText =
+"Сохранить товар";
+
+editIndex = null;
+
+}
+
+function addProduct(){
+
+const name =
+document.getElementById("name").value;
+
+let category =
+document.getElementById("category").value;
+
+if(category === "custom"){
+
+category =
+document.getElementById("customCategory").value;
+
+}
+
+const buyPrice =
+Number(document.getElementById("buyPrice").value);
+
+const sellPrice =
+Number(document.getElementById("sellPrice").value);
+
+const qty =
+Number(document.getElementById("qty").value);
+
+if(
+name === "" ||
+category === "" ||
+buyPrice <= 0 ||
+sellPrice <= 0 ||
+qty <= 0
+){
+alert("Заполните поля правильно");
+return;
+}
+
+const productData = {
+name:name,
+category:category,
+buyPrice:buyPrice,
+sellPrice:sellPrice,
+qty:qty
+};
+
+if(editIndex === null){
+
+products.push(productData);
+
+}else{
+
+products[editIndex] = productData;
+
+}
+
+saveData();
+
+renderCategories();
+
+renderProducts();
+
+renderStats();
+
+clearForm();
+
+}
+
+function editProduct(index){
+
+const item = products[index];
+
+document.getElementById("name").value =
+item.name;
+
+document.getElementById("buyPrice").value =
+item.buyPrice;
+
+document.getElementById("sellPrice").value =
+item.sellPrice;
+
+document.getElementById("qty").value =
+item.qty;
+
+document.getElementById("category").value =
+item.category;
+
+document.getElementById("formTitle").innerText =
+"Редактирование товара";
+
+document.getElementById("saveButton").innerText =
+"Сохранить изменения";
+
+editIndex = index;
+
+showScreen(
+'productsScreen',
+document.querySelectorAll('.nav-btn')[1]
+);
+
+window.scrollTo({
+top:0,
+behavior:"smooth"
+});
+
+}
+
+function sellProduct(index){
+
+if(products[index].qty <= 0){
+return;
+}
+
+products[index].qty--;
+
+cash += Number(products[index].sellPrice);
+
+const oneProfit =
+Number(products[index].sellPrice) -
+Number(products[index].buyPrice);
+
+totalProfit += oneProfit;
+
+salesHistory.unshift({
+name:products[index].name,
+price:products[index].sellPrice,
+time:new Date().toLocaleString("ru-RU")
+});
+
+if(products[index].qty === 0){
+products.splice(index,1);
+}
+
+saveData();
+
+updateTop();
+
+renderCategories();
+
+renderProducts();
+
+renderHistory();
+
+renderStats();
+
+}
+
+function deleteProduct(index){
+
+products.splice(index,1);
+
+saveData();
+
+renderCategories();
+
+renderProducts();
+
+renderStats();
+
+}
+
+function saveData(){
+
+localStorage.setItem(
+"products",
+JSON.stringify(products)
+);
+
+localStorage.setItem(
+"salesHistory",
+JSON.stringify(salesHistory)
+);
+
+localStorage.setItem(
+"expenses",
+JSON.stringify(expenses)
+);
+
+localStorage.setItem(
+"cash",
+cash
+);
+
+localStorage.setItem(
+"profit",
+totalProfit
+);
+
+}
+
+function renderProducts(){
+
+const div =
+document.getElementById("products");
+
+const search =
+document.getElementById("search")
+.value
+.toLowerCase();
+
+const filterCategory =
+document.getElementById("filterCategory")
+.value;
+
+div.innerHTML = "";
+
+const filtered =
+products.filter((item)=>{
+
+const matchSearch =
+item.name.toLowerCase()
+.includes(search);
+
+const matchCategory =
+filterCategory === "" ||
+item.category === filterCategory;
+
+return matchSearch && matchCategory;
+
+});
+
+if(filtered.length === 0){
+
+div.innerHTML = `
+
+<p class="empty">
+Товары не найдены
+</p>
+
+`;
+
+return;
+
+}
+
+filtered.forEach((item,index)=>{
+
+div.innerHTML += `
+
+<div class="product">
+
+<div class="category">
+${item.category}
+</div>
+
+<h3>${item.name}</h3>
+
+<p>
+Закупка:
+${formatMoney(item.buyPrice)}
+</p>
+
+<p>
+Продажа:
+${formatMoney(item.sellPrice)}
+</p>
+
+<p>
+Остаток:
+${item.qty}
+</p>
+
+${item.qty <= 5 ? `
+
+<p class="low-stock">
+⚠️ Заканчивается товар
+</p>
+
+` : ""}
+
+<p class="profit">
+
+Прибыль:
+${formatMoney(
+item.sellPrice - item.buyPrice
+)}
+
+</p>
+
+<button
+class="sell-btn"
+onclick="sellProduct(${index})"
+>
+Продать
+</button>
+
+<button
+class="edit-btn"
+onclick="editProduct(${index})"
+>
+Изменить
+</button>
+
+<button
+class="delete-btn"
+onclick="deleteProduct(${index})"
+>
+Удалить
+</button>
+
+</div>
+
+`;
+
+});
+
+}
+
+function renderHistory(){
+
+const div =
+document.getElementById("history");
+
+div.innerHTML = "";
+
+if(salesHistory.length === 0){
+
+div.innerHTML = `
+
+<p class="empty">
+Продаж пока нет
+</p>
+
+`;
+
+return;
+
+}
+
+salesHistory.forEach((sale)=>{
+
+div.innerHTML += `
+
+<div class="history-item">
+
+<h3>${sale.name}</h3>
+
+<p>
+Продано на:
+${formatMoney(sale.price)}
+</p>
+
+<p class="time">
+${sale.time}
+</p>
+
+</div>
+
+`;
+
+});
+
+}
+
+</script>
+
+</body>
+</html>
